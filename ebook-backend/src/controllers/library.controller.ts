@@ -7,7 +7,7 @@ export class LibraryController {
   // Get user's library
   async getUserLibrary(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = req.user?.userId;
+      const userId = (req as any).user?.id;
       
       if (!userId) {
         return res.status(401).json({ success: false, message: 'Unauthorized' });
@@ -32,7 +32,7 @@ export class LibraryController {
   // Add book to library
   async addToLibrary(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = req.user?.userId;
+      const userId = (req as any).user?.id;
       const { bookId } = req.body;
 
       if (!userId) {
@@ -81,7 +81,7 @@ export class LibraryController {
   // Remove book from library
   async removeFromLibrary(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = req.user?.userId;
+      const userId = (req as any).user?.id;
       const { bookId } = req.params;
 
       if (!userId) {

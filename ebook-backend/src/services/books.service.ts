@@ -116,4 +116,16 @@ export class BooksService {
     });
   }
 
+  async deleteBook(id: string) {
+    // First delete related library entries
+    await prisma.userLibrary.deleteMany({
+      where: { bookId: id },
+    });
+
+    // Then delete the book
+    return await prisma.book.delete({
+      where: { id },
+    });
+  }
+
 }

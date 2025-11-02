@@ -4,8 +4,8 @@ import { ReadingController } from '../controllers/reading.controller';
 const router = Router();
 const readingController = new ReadingController();
 
-// Route to start a reading session
-router.get('/session/:bookId', readingController.startReadingSession);
+// Get or start reading session
+router.get('/session/:bookId', readingController.getReadingSession);
 
 // Route to stream PDF content
 router.get('/stream/:bookId', readingController.streamPDF);

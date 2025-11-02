@@ -10,5 +10,6 @@ router.post('/', authMiddleware, uploadMiddleware, booksController.uploadBook);
 router.get('/', booksController.getBooks);
 router.get('/:id', booksController.getBookById);
 router.get('/:id/file', booksController.getBookFile);
+router.delete('/:id', authMiddleware, booksController.deleteBook);
 
 export default router;

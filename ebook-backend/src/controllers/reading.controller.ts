@@ -11,7 +11,8 @@ export class ReadingController {
     public streamPDF = async (req: Request, res: Response): Promise<void> => {
         const { bookId } = req.params;
         try {
-            await this.streamingService.streamPDF(bookId, res);
+            const stream = await this.streamingService.streamPdf(bookId);
+            stream.pipe(res);
         } catch (error) {
             res.status(500).json({ message: 'Error streaming PDF', error });
         }

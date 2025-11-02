@@ -1,18 +1,11 @@
 import { Readable } from 'stream';
-import { PdfService } from './pdf.service';
-import { StorageService } from './storage.service';
+import * as fs from 'fs';
+import * as path from 'path';
 
 export class StreamingService {
-    private pdfService: PdfService;
-    private storageService: StorageService;
-
-    constructor() {
-        this.pdfService = new PdfService();
-        this.storageService = new StorageService();
-    }
-
     async streamPdf(bookId: string): Promise<Readable> {
-        const filePath = await this.storageService.getFilePath(bookId);
-        return this.pdfService.createReadStream(filePath);
+        // Return a file read stream from the PDF storage directory
+        const filePath = path.join(__dirname, '../../storage/pdf', `${bookId}.pdf`);
+        return fs.createReadStream(filePath);
     }
 }

@@ -1,17 +1,12 @@
 import { Request, Response } from 'express';
-import UserRepository from '../repositories/user.repository';
+import userRepository from '../repositories/user.repository';
 
 class UsersController {
-    private userRepository: UserRepository;
-
-    constructor() {
-        this.userRepository = new UserRepository();
-    }
 
     public async getUserProfile(req: Request, res: Response): Promise<void> {
         try {
             const userId = req.params.id;
-            const user = await this.userRepository.findById(userId);
+            const user = await userRepository.getUserById(userId);
             if (!user) {
                 res.status(404).json({ message: 'User not found' });
                 return;
@@ -26,7 +21,7 @@ class UsersController {
         try {
             const userId = req.params.id;
             const updatedData = req.body;
-            const updatedUser = await this.userRepository.update(userId, updatedData);
+            const updatedUser = await userRepository.updateUser(userId, updatedData);
             if (!updatedUser) {
                 res.status(404).json({ message: 'User not found' });
                 return;
@@ -40,7 +35,7 @@ class UsersController {
     public async deleteUser(req: Request, res: Response): Promise<void> {
         try {
             const userId = req.params.id;
-            const deletedUser = await this.userRepository.delete(userId);
+            const deletedUser = await userRepository.deleteUser(userId);
             if (!deletedUser) {
                 res.status(404).json({ message: 'User not found' });
                 return;
