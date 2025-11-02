@@ -70,7 +70,9 @@ if (user && authToken) {
   }
 }
 
-const API_BASE = 'http://localhost:3000/api';
+// Use API_BASE from config.js (automatically detects localhost vs production)
+const API_URL = typeof API_BASE !== 'undefined' ? API_BASE : 'http://localhost:3000';
+const API_BASE_URL = `${API_URL}/api`;
 
 async function loadBooks() {
   const container = document.getElementById('category_items');
@@ -78,7 +80,7 @@ async function loadBooks() {
   container.innerHTML = '<p>Loading books…</p>';
 
   try {
-    const res = await fetch(`${API_BASE}/books`);
+    const res = await fetch(`${API_BASE_URL}/books`);
     if (!res.ok) {
       const text = await res.text();
       throw new Error(`HTTP ${res.status} - ${text}`);
@@ -99,7 +101,7 @@ async function loadBooks() {
       // Replace backslashes with forward slashes for URL
       const coverPath = b.coverPath ? b.coverPath.replace(/\\/g, '/') : null;
       const coverUrl = coverPath
-        ? `http://localhost:3000/${coverPath}` 
+        ? `${API_URL}/${coverPath}` 
         : 'assets/images/img1.webp';
       
       console.log(`Book: ${b.title}, Cover URL: ${coverUrl}`);
@@ -117,7 +119,7 @@ async function loadBooks() {
           <p><strong>Description:</strong> ${escapeHtml(b.description || '')}</p>
         </div>
         <div class="book-actions">
-          <a class="read-btn" href="http://localhost:3000/api/books/${b.id}/file" target="_blank">Open PDF</a>
+          <a class="read-btn" href="${API_URL}/api/books/${b.id}/file" target="_blank">Open PDF</a>
           <button class="add-library-btn">Add to Library</button>
         </div>
       `;

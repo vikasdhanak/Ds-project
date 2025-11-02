@@ -4,6 +4,9 @@
 
 console.log('📤 Upload.js loaded!');
 
+// Use API_BASE from config.js
+const API_URL = typeof API_BASE !== 'undefined' ? API_BASE : 'http://localhost:3000';
+
 // Check if user is logged in
 const authToken = localStorage.getItem('authToken');
 if (!authToken) {
@@ -132,10 +135,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     submitBtn.disabled = true;
                 }
 
-                console.log('Sending request to:', 'http://localhost:3000/api/books');
+                console.log('Sending request to:', `${API_URL}/api/books`);
 
                 // Upload to backend
-                const response = await fetch('http://localhost:3000/api/books', {
+                const response = await fetch(`${API_URL}/api/books`, {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${token}`

@@ -1,5 +1,8 @@
 // script.js
 document.addEventListener('DOMContentLoaded', function() {
+    // Use API_BASE from config.js
+    const API_URL = typeof API_BASE !== 'undefined' ? API_BASE : 'http://localhost:3000';
+    
     const signupModal = document.getElementById('signupModal');
     const loginModal = document.getElementById('loginModal');
     const closeModalBtn = document.getElementById('closeModal');
@@ -73,7 +76,7 @@ document.addEventListener('DOMContentLoaded', function() {
         };
         
         try {
-            const response = await fetch('http://localhost:3000/api/auth/signup', {
+            const response = await fetch(`${API_URL}/api/auth/signup`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -113,7 +116,7 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Attempting login with:', { email, password: '***' });
         
         try {
-            const response = await fetch('http://localhost:3000/api/auth/login', {
+            const response = await fetch(`${API_URL}/api/auth/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
