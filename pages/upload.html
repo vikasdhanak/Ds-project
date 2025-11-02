@@ -15,15 +15,15 @@
                 <div class="pdf-upload-area" id="pdfUploadArea">
                     <i class='bx bx-cloud-upload'></i>
                     <p>Drag & drop PDF here or click to browse</p>
-                    <input type="file" id="bookPDF" accept=".pdf" required hidden>
+                    <input type="file" id="bookPDF" name="bookPDF" accept=".pdf" style="display: none;">
                 </div>
                 <span id="pdfFileName" class="file-name"></span>
             </div>
 
             <!-- Cover Image Upload -->
             <div class="form-group">
-                <label for="bookCover">Book Cover Image <span class="required">*</span></label>
-                <input type="file" id="bookCover" accept="image/*" required class="file-input">
+                <label for="bookCover">Book Cover Image</label>
+                <input type="file" id="bookCover" name="bookCover" accept="image/*" class="file-input">
             </div>
 
             <!-- Book Title -->
@@ -80,6 +80,7 @@
 
 <script src="../js/main.js"></script>
 <script src="../js/search.js"></script>
+<script src="../js/upload.js"></script>
 <script src="../js/upload-modal.js"></script>
 </body>
 </html>

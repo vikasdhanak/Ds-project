@@ -4,29 +4,30 @@
 // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
 generator client {
   provider = "prisma-client-js"
 }
 
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
-
 model User {
-  id         String   @id @default(uuid())
-  email      String   @unique
+  id         String        @id @default(uuid())
+  email      String        @unique
   screenName String
   password   String
-  newsletter Boolean  @default(false)
-  disability Boolean  @default(false)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  newsletter Boolean       @default(false)
+  disability Boolean       @default(false)
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
   books      Book[]
+  library    UserLibrary[]
 }
 
 model Book {
-  id          String   @id @default(uuid())
+  id          String        @id @default(uuid())
   title       String
   author      String
   description String?
@@ -35,8 +36,22 @@ model Book {
   pdfPath     String
   coverPath   String?
   uploadedBy  String
-  user        User     @relation(fields: [uploadedBy], references: [id])
-  views       Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  user        User          @relation(fields: [uploadedBy], references: [id])
+  views       Int           @default(0)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  inLibraries UserLibrary[]
+}
+
+model UserLibrary {
+  id        String   @id @default(uuid())
+  userId    String
+  bookId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book      Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  addedAt   DateTime @default(now())
+
+  @@unique([userId, bookId])
+  @@index([userId])
+  @@index([bookId])
 }

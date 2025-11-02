@@ -1,240 +1,136 @@
-const images = document.querySelectorAll('.banner_image'); 
-let currentIndex = 0; 
+console.log('🚀 Main.js loaded!');
 
-function showNextImage() { 
-    images[currentIndex].classList.remove('active'); 
-    currentIndex = (currentIndex + 1) % images.length; 
-    images[currentIndex].classList.add('active'); 
-} 
+const images = document.querySelectorAll('.banner_image');
+let currentIndex = 0;
 
-setInterval(showNextImage, 5000); 
-images[currentIndex].classList.add('active'); 
+function showNextImage() {
+  if (images.length === 0) return; // No images on this page
+  images[currentIndex].classList.remove('active');
+  currentIndex = (currentIndex + 1) % images.length;
+  images[currentIndex].classList.add('active');
+}
 
-// SIGN IN/UP BUTTON NAVIGATION - Updated for folder structure
+if (images.length > 0) {
+  setInterval(showNextImage, 5000);
+  images[currentIndex].classList.add('active');
+}
+
+// Check if user is logged in
+const authToken = localStorage.getItem('authToken');
+const user = JSON.parse(localStorage.getItem('user') || 'null');
+
 const signInBtn = document.getElementById('signInBtn');
 const signUpBtn = document.getElementById('signUpBtn');
+const uploadBtn = document.querySelector('.Upload');
 
-if(signInBtn) {
-    signInBtn.addEventListener('click', () => { 
-        window.location.href = 'Login page/signin.html';  // Updated path
-    }); 
-}
+console.log('Auth token:', authToken ? 'Present' : 'Not found');
+console.log('User:', user);
 
-if(signUpBtn) {
-    signUpBtn.addEventListener('click', () => { 
-        window.location.href = 'Login page/signin.html';  // Updated path
+if (user && authToken) {
+  // User is logged in - show user name and logout button
+  console.log('User is logged in');
+  
+  if (signInBtn) {
+    signInBtn.textContent = `👤 ${user.screenName || user.email}`;
+    signInBtn.parentElement.href = '#';
+    signInBtn.style.cursor = 'default';
+  }
+  
+  if (signUpBtn) {
+    signUpBtn.textContent = 'Logout';
+    signUpBtn.parentElement.href = '#';
+    signUpBtn.parentElement.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (confirm('Are you sure you want to logout?')) {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('user');
+        alert('Logged out successfully!');
+        window.location.href = 'main.html';
+      }
     });
+  }
+  
+  // Enable upload button
+  if (uploadBtn) {
+    uploadBtn.href = 'pages/upload.html';
+    uploadBtn.style.opacity = '1';
+    uploadBtn.style.cursor = 'pointer';
+  }
+} else {
+  // User not logged in
+  console.log('User not logged in');
+  
+  // Disable upload button
+  if (uploadBtn) {
+    uploadBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      alert('Please login first to upload books!');
+      window.location.href = 'pages/login.html';
+    });
+  }
 }
 
-// // SEARCH FUNCTIONALITY
-// const searchInput = document.getElementById('searchInput');
-// const bookCards = document.querySelectorAll('.book-card');
+const API_BASE = 'http://localhost:3000/api';
 
-// if(searchInput) {
-//     searchInput.addEventListener('input', function(e) {
-//         const searchTerm = e.target.value.toLowerCase().trim();
-        
-//         bookCards.forEach(card => {
-//             const bookDescription = card.querySelector('.book-description');
-//             if(bookDescription) {
-//                 const title = bookDescription.querySelector('p:nth-child(1)').textContent.toLowerCase();
-//                 const author = bookDescription.querySelector('p:nth-child(2)').textContent.toLowerCase();
-//                 const description = bookDescription.querySelector('p:nth-child(3)').textContent.toLowerCase();
-                
-//                 // Check if search term matches title, author, or description
-//                 if (title.includes(searchTerm) || 
-//                     author.includes(searchTerm) || 
-//                     description.includes(searchTerm)) {
-//                     card.style.display = 'block';
-//                     card.style.animation = 'fadeIn 0.5s ease';
-//                 } else {
-//                     card.style.display = 'none';
-//                 }
-//             }
-//         });
-        
-//         // If search is empty, show all books
-//         if (searchTerm === '') {
-//             bookCards.forEach(card => {
-//                 card.style.display = 'block';
-//             });
-//         }
-//     });
-// }
+async function loadBooks() {
+  const container = document.getElementById('category_items');
+  if (!container) return;
+  container.innerHTML = '<p>Loading books…</p>';
 
-// // Add fade-in animation
-// const style = document.createElement('style');
-// style.textContent = `
-//     @keyframes fadeIn {
-//         from { opacity: 0; transform: translateY(20px); }
-//         to { opacity: 1; transform: translateY(0); }
-//     }
-// `;
-// document.head.appendChild(style);
-
-
-
-
-
-
-// // SEARCH FUNCTIONALITY
-
-//  searchInput = document.getElementById('searchInput');
-
-// if (searchInput) {
-//     let searchTimeout;
-    
-//     searchInput.addEventListener('input', function() {
-//         clearTimeout(searchTimeout);
-//         const query = this.value.trim();
-        
-//         if (query.length < 2) return;
-        
-//         searchTimeout = setTimeout(() => {
-//             performSearch(query);
-//         }, 500);
-//     });
-    
-//     searchInput.addEventListener('keypress', function(e) {
-//         if (e.key === 'Enter') {
-//             const query = this.value.trim();
-//             if (query.length >= 2) {
-//                 performSearch(query);
-//             }
-//         }
-//     });
-// }
-
-// function performSearch(query) {
-//     console.log('Searching for:', query);
-//     window.location.href = `pages/search-results.html?q=${encodeURIComponent(query)}`;
-// }
-
-
-// ==========================================
-// CATEGORY FILTER FUNCTIONALITY
-// ==========================================
-
-// document.addEventListener('DOMContentLoaded', function() {
-//     const categoryLinks = document.querySelectorAll('.dropdown-content a');
-    
-//     categoryLinks.forEach(link => {
-//         link.addEventListener('click', function(e) {
-//             e.preventDefault();
-//             const category = this.getAttribute('data-category');
-//             filterByCategory(category);
-            
-//             // Update active state
-//             categoryLinks.forEach(l => l.classList.remove('active'));
-//             this.classList.add('active');
-//         });
-//     });
-// });
-
-
-
-// ==========================================
-// CATEGORY DROPDOWN TOGGLE (CLICK TO OPEN/CLOSE)
-// ==========================================
-
-document.addEventListener('DOMContentLoaded', function() {
-    const categoriesBtn = document.querySelector('.categories-dropdown .Categories');
-    const dropdownContent = document.querySelector('.dropdown-content');
-    const categoryLinks = document.querySelectorAll('.dropdown-content a');
-    
-    // Toggle dropdown on click
-    if (categoriesBtn && dropdownContent) {
-        categoriesBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            // Toggle active class
-            dropdownContent.classList.toggle('active');
-            categoriesBtn.classList.toggle('active');
-            
-            console.log('Dropdown toggled:', dropdownContent.classList.contains('active'));
-        });
+  try {
+    const res = await fetch(`${API_BASE}/books`);
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`HTTP ${res.status} - ${text}`);
     }
-    
-    // Close dropdown when clicking outside
-    document.addEventListener('click', function(e) {
-        if (!e.target.closest('.categories-dropdown')) {
-            dropdownContent.classList.remove('active');
-            categoriesBtn.classList.remove('active');
-        }
-    });
-    
-    // Filter categories when clicking on an option
-    categoryLinks.forEach(link => {
-        link.addEventListener('click', function(e) {
-            e.preventDefault();
-            const category = this.getAttribute('data-category');
-            filterByCategory(category);
-            
-            // Close dropdown after selection
-            dropdownContent.classList.remove('active');
-            categoriesBtn.classList.remove('active');
-            
-            // Update active state on links
-            categoryLinks.forEach(l => l.classList.remove('active'));
-            this.classList.add('active');
-        });
-    });
-});
-
-
-
-
-
-function filterByCategory(category) {
-    const bookCards = document.querySelectorAll('.book-card');
-    const categoryHeadings = document.querySelectorAll('.category_heading');
-    const categoryContainers = document.querySelectorAll('.category_items');
-    
-    console.log('Filtering by category:', category);
-    
-    if (category === 'all') {
-        // Show all books
-        bookCards.forEach(card => {
-            card.style.display = 'block';
-        });
-        categoryHeadings.forEach(heading => {
-            heading.style.display = 'block';
-        });
-        categoryContainers.forEach(container => {
-            container.style.display = 'grid';
-        });
-        return;
+    const response = await res.json();
+    const books = response.data?.books || [];
+    if (!Array.isArray(books) || books.length === 0) {
+      container.innerHTML = '<p>No books found.</p>';
+      return;
     }
-    
-    // Hide all first
-    bookCards.forEach(card => {
-        card.style.display = 'none';
+
+    container.innerHTML = '';
+    books.forEach(b => {
+      const card = document.createElement('div');
+      card.className = 'book-card';
+      
+      // Use backend cover image if available, otherwise use placeholder
+      // Replace backslashes with forward slashes for URL
+      const coverPath = b.coverPath ? b.coverPath.replace(/\\/g, '/') : null;
+      const coverUrl = coverPath
+        ? `http://localhost:3000/${coverPath}` 
+        : 'assets/images/img1.webp';
+      
+      console.log(`Book: ${b.title}, Cover URL: ${coverUrl}`);
+      
+      card.innerHTML = `
+        <img src="${coverUrl}" 
+             alt="${escapeHtml(b.title)}" 
+             class="trending-books" 
+             onerror="console.error('Failed to load:', this.src); this.src='assets/images/img1.webp'" 
+             onload="console.log('Loaded:', this.src)" />
+        <div class="book-description">
+          <p><strong>Title:</strong> ${escapeHtml(b.title)}</p>
+          <p><strong>Author:</strong> ${escapeHtml(b.author)}</p>
+          <p><strong>Category:</strong> ${escapeHtml(b.category || '')}</p>
+          <p><strong>Description:</strong> ${escapeHtml(b.description || '')}</p>
+        </div>
+        <div class="book-actions">
+          <a class="read-btn" href="http://localhost:3000/api/books/${b.id}/file" target="_blank">Open PDF</a>
+          <button class="add-library-btn">Add to Library</button>
+        </div>
+      `;
+      container.appendChild(card);
     });
-    
-    // Show only matching category
-    categoryHeadings.forEach((heading, index) => {
-        const headingText = heading.textContent.toLowerCase();
-        const container = categoryContainers[index];
-        
-        if (headingText.includes(category) || 
-            (category === 'trending' && headingText.includes('trending')) ||
-            (category === 'self-help' && headingText.includes('self help'))) {
-            
-            heading.style.display = 'block';
-            container.style.display = 'grid';
-            
-            // Show books in this container
-            const booksInContainer = container.querySelectorAll('.book-card');
-            booksInContainer.forEach(card => {
-                card.style.display = 'block';
-            });
-        } else {
-            heading.style.display = 'none';
-            container.style.display = 'none';
-        }
-    });
-    
-    // Scroll to top smoothly
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } catch (err) {
+    console.error('loadBooks error', err);
+    container.innerHTML = `<p style="color:red">Error loading books: ${escapeHtml(err.message || err)}</p>`;
+  }
 }
+
+function escapeHtml(s) {
+  return String(s || '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+document.addEventListener('DOMContentLoaded', loadBooks);

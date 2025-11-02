@@ -6,15 +6,31 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+
 # TypeScript
 *.tsbuildinfo
+
 # Env
 .env
+
 # Editor
 .vscode/
 .DS_Store
+
 # Coverage
 coverage/
+
+# Database files
+*.db
+*.db-journal
+ebook-backend/prisma/dev.db
+
 # Storage for uploaded/generated files
-storage/uploads/
-storage/pdf/
+ebook-backend/storage/uploads/*
+ebook-backend/storage/pdf/*
+ebook-backend/storage/tmp/*
+
+# Keep directory structure
+!ebook-backend/storage/uploads/.gitkeep
+!ebook-backend/storage/pdf/.gitkeep
+!ebook-backend/storage/tmp/.gitkeep
