@@ -1,5 +1,44 @@
 console.log('🚀 Main.js loaded!');
 
+// API Configuration - MUST BE AT THE TOP!
+const API_URL = typeof API_BASE !== 'undefined' ? API_BASE : 'http://localhost:3000';
+const API_BASE_URL = `${API_URL}/api`;
+
+// Check if user is admin
+let isAdmin = false;
+
+async function checkIfAdmin() {
+  try {
+    const token = localStorage.getItem('authToken');
+    console.log('🔍 Checking admin status...');
+    console.log('📝 Token exists:', !!token);
+    
+    if (!token) {
+      console.log('❌ No token found');
+      return false;
+    }
+
+    const url = `${API_BASE_URL}/admin/check`;
+    console.log('📡 Calling:', url);
+    
+    const res = await fetch(url, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+
+    console.log('📥 Response status:', res.status);
+    const response = await res.json();
+    console.log('📦 Response data:', response);
+    
+    const isAdmin = response.success && response.data.isAdmin;
+    console.log('👑 Is Admin?', isAdmin);
+    
+    return isAdmin;
+  } catch (error) {
+    console.error('❌ Error checking admin:', error);
+    return false;
+  }
+}
+
 const images = document.querySelectorAll('.banner_image');
 let currentIndex = 0;
 
@@ -45,7 +84,7 @@ if (user && authToken) {
         localStorage.removeItem('authToken');
         localStorage.removeItem('user');
         alert('Logged out successfully!');
-        window.location.href = 'main.html';
+        window.location.href = 'index.html';
       }
     });
   }
@@ -56,6 +95,33 @@ if (user && authToken) {
     uploadBtn.style.opacity = '1';
     uploadBtn.style.cursor = 'pointer';
   }
+  
+  // Check if admin and add admin link
+  console.log('🎯 Starting admin check...');
+  checkIfAdmin().then(adminStatus => {
+    isAdmin = adminStatus;
+    console.log('🔑 Final Admin status:', isAdmin);
+    
+    if (isAdmin) {
+      console.log('🔍 Looking for admin link element...');
+      // Show the admin dashboard link
+      const adminLink = document.getElementById('adminDashboardLink');
+      console.log('📍 Admin link element:', adminLink);
+      
+      if (adminLink) {
+        adminLink.style.display = 'inline-block';
+        console.log('✅✅✅ Admin dashboard link is NOW VISIBLE!');
+        console.log('Link href:', adminLink.href);
+      } else {
+        console.error('❌❌❌ Admin link element NOT FOUND in DOM!');
+        console.log('Available elements:', document.querySelectorAll('.navbar a'));
+      }
+    } else {
+      console.log('👤 User is not admin - link will stay hidden');
+    }
+  }).catch(err => {
+    console.error('❌ Error checking admin status:', err);
+  });
 } else {
   // User not logged in
   console.log('User not logged in');
@@ -70,14 +136,14 @@ if (user && authToken) {
   }
 }
 
-// Use API_BASE from config.js (automatically detects localhost vs production)
-const API_URL = typeof API_BASE !== 'undefined' ? API_BASE : 'http://localhost:3000';
-const API_BASE_URL = `${API_URL}/api`;
-
+// Load books function
 async function loadBooks() {
   const container = document.getElementById('category_items');
   if (!container) return;
   container.innerHTML = '<p>Loading books…</p>';
+
+  // Check admin status before loading
+  isAdmin = await checkIfAdmin();
 
   try {
     const res = await fetch(`${API_BASE_URL}/books`);
@@ -123,7 +189,8 @@ async function loadBooks() {
         </div>
         <div class="book-actions">
           <a class="read-btn" href="pages/pdf-reader.html?id=${b.id}">📖 Read</a>
-          <button class="add-library-btn" onclick="addToLibrary('${b.id}', '${escapeHtml(b.title).replace(/'/g, "\\'")}')">Add to Library</button>
+          ${isAdmin ? `<button class="edit-book-btn" onclick="editBook('${b.id}')">✏️ Edit</button>` : ''}
+          <button class="add-library-btn" onclick="addToLibrary('${b.id}', '${escapeHtml(b.title).replace(/'/g, "\\'")}')">📚 Add to Library</button>
           <button class="delete-book-btn" onclick="deleteBook('${b.id}', '${escapeHtml(b.title).replace(/'/g, "\\'")}')">🗑️ Delete</button>
         </div>
       `;
@@ -530,7 +597,8 @@ async function loadBooksByCategory(category) {
         </div>
         <div class="book-actions">
           <a class="read-btn" href="pages/pdf-reader.html?id=${b.id}">📖 Read</a>
-          <button class="add-library-btn" onclick="addToLibrary('${b.id}', '${escapeHtml(b.title).replace(/'/g, "\\'")}')">Add to Library</button>
+          ${isAdmin ? `<button class="edit-book-btn" onclick="editBook('${b.id}')">✏️ Edit</button>` : ''}
+          <button class="add-library-btn" onclick="addToLibrary('${b.id}', '${escapeHtml(b.title).replace(/'/g, "\\'")}')">📚 Add to Library</button>
           <button class="delete-book-btn" onclick="deleteBook('${b.id}', '${escapeHtml(b.title).replace(/'/g, "\\'")}')">🗑️ Delete</button>
         </div>
       `;
@@ -542,5 +610,143 @@ async function loadBooksByCategory(category) {
   }
 }
 
+// Edit Book Function
+async function editBook(bookId) {
+  try {
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      alert('❌ Please login first!');
+      window.location.href = 'pages/login.html';
+      return;
+    }
+
+    // Fetch book details
+    const res = await fetch(`${API_BASE_URL}/books/${bookId}`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    
+    if (!res.ok) {
+      throw new Error('Failed to fetch book details');
+    }
+    
+    const response = await res.json();
+    const book = response.data;
+
+    // Create edit modal
+    const modal = document.createElement('div');
+    modal.id = 'editBookModal';
+    modal.style.cssText = `
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.8); display: flex; align-items: center;
+      justify-content: center; z-index: 10000; backdrop-filter: blur(5px);
+    `;
+    
+    modal.innerHTML = `
+      <div style="background: #fff; padding: 30px; border-radius: 15px; max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
+        <h2 style="margin: 0 0 20px 0; color: #1b1f39; font-size: 24px;">✏️ Edit Book</h2>
+        
+        <form id="editBookForm">
+          <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #1b1f39;">Title:</label>
+            <input type="text" id="editTitle" value="${escapeHtml(book.title)}" 
+                   style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px;" required>
+          </div>
+          
+          <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #1b1f39;">Author:</label>
+            <input type="text" id="editAuthor" value="${escapeHtml(book.author)}" 
+                   style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px;" required>
+          </div>
+          
+          <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #1b1f39;">Category:</label>
+            <select id="editCategory" style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px;" required>
+              <option value="Fiction" ${book.category === 'Fiction' ? 'selected' : ''}>Fiction</option>
+              <option value="Non-Fiction" ${book.category === 'Non-Fiction' ? 'selected' : ''}>Non-Fiction</option>
+              <option value="Science" ${book.category === 'Science' ? 'selected' : ''}>Science</option>
+              <option value="Technology" ${book.category === 'Technology' ? 'selected' : ''}>Technology</option>
+              <option value="Business" ${book.category === 'Business' ? 'selected' : ''}>Business</option>
+              <option value="Self-Help" ${book.category === 'Self-Help' ? 'selected' : ''}>Self-Help</option>
+              <option value="Other" ${book.category === 'Other' ? 'selected' : ''}>Other</option>
+            </select>
+          </div>
+          
+          <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #1b1f39;">Description:</label>
+            <textarea id="editDescription" rows="4" 
+                      style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px; resize: vertical;">${escapeHtml(book.description || '')}</textarea>
+          </div>
+          
+          <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #1b1f39;">📄 Update PDF (optional):</label>
+            <input type="file" id="editPDF" accept=".pdf" 
+                   style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px;">
+            <small style="color: #666; display: block; margin-top: 5px;">Current: ${escapeHtml(book.pdfUrl || 'No PDF')}</small>
+          </div>
+          
+          <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #1b1f39;">📷 Update Cover Image (optional):</label>
+            <input type="file" id="editCover" accept="image/*" 
+                   style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px;">
+            <small style="color: #666; display: block; margin-top: 5px;">Current: ${escapeHtml(book.coverUrl || 'No Cover')}</small>
+          </div>
+          
+          <div style="display: flex; gap: 10px; justify-content: flex-end;">
+            <button type="button" onclick="document.getElementById('editBookModal').remove()" 
+                    style="padding: 12px 24px; background: #ccc; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px;">
+              Cancel
+            </button>
+            <button type="submit" 
+                    style="padding: 12px 24px; background: linear-gradient(135deg, #9c27b0, #ba68c8); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px;">
+              💾 Save Changes
+            </button>
+          </div>
+        </form>
+      </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Handle form submission
+    document.getElementById('editBookForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const formData = new FormData();
+      formData.append('title', document.getElementById('editTitle').value);
+      formData.append('author', document.getElementById('editAuthor').value);
+      formData.append('category', document.getElementById('editCategory').value);
+      formData.append('description', document.getElementById('editDescription').value);
+      
+      const pdfFile = document.getElementById('editPDF').files[0];
+      if (pdfFile) formData.append('pdf', pdfFile);
+      
+      const coverFile = document.getElementById('editCover').files[0];
+      if (coverFile) formData.append('cover', coverFile);
+      
+      try {
+        const updateRes = await fetch(`${API_BASE_URL}/books/${bookId}`, {
+          method: 'PUT',
+          headers: { 'Authorization': `Bearer ${token}` },
+          body: formData
+        });
+        
+        if (!updateRes.ok) throw new Error('Failed to update book');
+        
+        alert('✅ Book updated successfully!');
+        modal.remove();
+        location.reload(); // Reload to show updated content
+      } catch (error) {
+        console.error('Update error:', error);
+        alert('❌ Failed to update book: ' + error.message);
+      }
+    });
+    
+  } catch (error) {
+    console.error('Edit book error:', error);
+    alert('❌ Failed to load book details: ' + error.message);
+  }
+}
+
 window.loadMyLibrary = loadMyLibrary;
 window.removeFromLibrary = removeFromLibrary;
+window.editBook = editBook;

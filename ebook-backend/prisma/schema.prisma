@@ -18,29 +18,35 @@ model User {
   email      String        @unique
   screenName String
   password   String
+  role       String        @default("user") // "user" or "admin"
   newsletter Boolean       @default(false)
   disability Boolean       @default(false)
   createdAt  DateTime      @default(now())
   updatedAt  DateTime      @updatedAt
   books      Book[]
   library    UserLibrary[]
+  reviews    Review[]
+  reviewVotes ReviewVote[]
 }
 
 model Book {
-  id          String        @id @default(uuid())
-  title       String
-  author      String
-  description String?
-  category    String
-  tags        String?
-  pdfPath     String
-  coverPath   String?
-  uploadedBy  String
-  user        User          @relation(fields: [uploadedBy], references: [id])
-  views       Int           @default(0)
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  inLibraries UserLibrary[]
+  id            String        @id @default(uuid())
+  title         String
+  author        String
+  description   String?
+  category      String
+  tags          String?
+  pdfPath       String
+  coverPath     String?
+  uploadedBy    String
+  user          User          @relation(fields: [uploadedBy], references: [id])
+  views         Int           @default(0)
+  averageRating Float         @default(0)
+  reviewCount   Int           @default(0)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  inLibraries   UserLibrary[]
+  reviews       Review[]
 }
 
 model UserLibrary {
@@ -54,4 +60,34 @@ model UserLibrary {
   @@unique([userId, bookId])
   @@index([userId])
   @@index([bookId])
+}
+
+model Review {
+  id           String       @id @default(uuid())
+  userId       String
+  bookId       String
+  rating       Int          // 1-5 stars
+  comment      String?
+  helpfulCount Int          @default(0)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book         Book         @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  votes        ReviewVote[]
+
+  @@unique([userId, bookId])
+  @@index([bookId])
+  @@index([userId])
+}
+
+model ReviewVote {
+  id        String   @id @default(uuid())
+  userId    String
+  reviewId  String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  review    Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, reviewId])
+  @@index([reviewId])
 }

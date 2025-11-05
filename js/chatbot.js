@@ -26,7 +26,7 @@ class AIChatbot {
         const chatbotHTML = `
             <!-- Chatbot Toggle Button -->
             <button class="chatbot-toggle" id="chatbotToggle">
-                🤖
+                <img src="../assets/images/chatbot-icon.svg" alt="Chat Assistant">
             </button>
 
             <!-- Chatbot Container -->
@@ -34,7 +34,9 @@ class AIChatbot {
                 <!-- Header -->
                 <div class="chatbot-header">
                     <div class="chatbot-header-left">
-                        <div class="chatbot-avatar">🤖</div>
+                        <div class="chatbot-avatar">
+                            <img src="../assets/images/chatbot-icon.svg" alt="Chat Assistant">
+                        </div>
                         <div class="chatbot-title">
                             <h3>Reading Assistant</h3>
                             <p>Ask me anything about your text</p>
@@ -58,7 +60,9 @@ class AIChatbot {
 
                 <!-- Typing Indicator -->
                 <div class="chat-message bot" style="display: none;" id="typingIndicator">
-                    <div class="message-avatar bot">🤖</div>
+                    <div class="message-avatar bot">
+                        <img src="../assets/images/chatbot-icon.svg" alt="Bot">
+                    </div>
                     <div class="typing-indicator active">
                         <div class="typing-dot"></div>
                         <div class="typing-dot"></div>
@@ -351,9 +355,13 @@ class AIChatbot {
         const welcome = messagesContainer.querySelector('.welcome-message');
         if (welcome) welcome.remove();
 
+        const avatarContent = sender === 'bot' 
+            ? '<img src="../assets/images/chatbot-icon.svg" alt="Bot">' 
+            : '👤';
+
         const messageHTML = `
             <div class="chat-message ${sender}">
-                <div class="message-avatar ${sender}">${sender === 'bot' ? '🤖' : '👤'}</div>
+                <div class="message-avatar ${sender}">${avatarContent}</div>
                 <div class="message-bubble ${sender}">${this.escapeHtml(text)}</div>
             </div>
         `;

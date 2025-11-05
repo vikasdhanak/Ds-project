@@ -43,7 +43,7 @@ export class BooksController {
 
   async getBooks(req: Request, res: Response, next: NextFunction) {
     try {
-      const { category, search, page = 1, limit = 10 } = req.query;
+      const { category, search, page = 1, limit = 100 } = req.query;
 
       const books = await booksService.getAllBooks({
         category: category as string,
@@ -97,6 +97,12 @@ export class BooksController {
       // Increment view count
       await booksService.incrementViews(id);
 
+      // Set proper headers for PDF streaming
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', 'inline');
+      res.setHeader('Accept-Ranges', 'bytes');
+      res.setHeader('Cache-Control', 'public, max-age=3600');
+      
       // Send the PDF file
       res.sendFile(book.pdfPath, { root: '.' });
     } catch (error) {

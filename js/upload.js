@@ -4,15 +4,49 @@
 
 console.log('📤 Upload.js loaded!');
 
-// Use API_BASE from config.js
-const API_URL = typeof API_BASE !== 'undefined' ? API_BASE : 'http://localhost:3000';
+// Use API_BASE from config.js (already loaded in HTML)
+// Don't redeclare - config.js already exports API_BASE
+console.log('API_BASE from config:', typeof API_BASE !== 'undefined' ? API_BASE : 'Not found');
 
-// Check if user is logged in
-const authToken = localStorage.getItem('authToken');
-if (!authToken) {
-    alert('Please login first to upload books!');
-    window.location.href = 'login.html';
+// Check if user is logged in (don't declare globally - use inside function)
+function checkAuth() {
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+        alert('Please login first to upload books!');
+        window.location.href = 'login.html';
+        return false;
+    }
+    return true;
 }
+
+// Run auth check on page load
+if (!checkAuth()) {
+    // Will redirect if not authenticated
+}
+
+// CRITICAL: Prevent browser from opening PDFs when dragged anywhere on the page
+window.addEventListener('dragover', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+}, false);
+
+window.addEventListener('drop', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+}, false);
+
+// Also prevent on document level
+document.addEventListener('dragover', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+}, false);
+
+document.addEventListener('drop', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+}, false);
+
+console.log('🛡️ Drag & drop prevention active on entire page');
 
 document.addEventListener('DOMContentLoaded', function() {
     const uploadBtn = document.getElementById('uploadBtn');
@@ -48,30 +82,74 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // PDF Upload Area - Click to browse
+    // PDF Upload Area - Drag and Drop only (button handles click)
     if (pdfUploadArea) {
-        pdfUploadArea.addEventListener('click', function() {
-            pdfInput.click();
+        // Remove click event from the area itself
+        // pdfUploadArea.addEventListener('click', ...) - REMOVED
+        
+        // Prevent default drag behaviors on the entire document
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            document.body.addEventListener(eventName, function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            });
         });
 
-        // Drag & Drop functionality
-        pdfUploadArea.addEventListener('dragover', function(e) {
+        // Drag & Drop functionality for the upload area
+        pdfUploadArea.addEventListener('dragenter', function(e) {
             e.preventDefault();
+            e.stopPropagation();
             pdfUploadArea.classList.add('drag-over');
         });
 
-        pdfUploadArea.addEventListener('dragleave', function() {
+        pdfUploadArea.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            pdfUploadArea.classList.add('drag-over');
+        });
+
+        pdfUploadArea.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
             pdfUploadArea.classList.remove('drag-over');
         });
 
         pdfUploadArea.addEventListener('drop', function(e) {
             e.preventDefault();
+            e.stopPropagation();
             pdfUploadArea.classList.remove('drag-over');
             
-            if (e.dataTransfer.files.length) {
-                pdfInput.files = e.dataTransfer.files;
-                displayFileName(e.dataTransfer.files[0]);
+            console.log('📥 File dropped in upload area!');
+            
+            if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length) {
+                const file = e.dataTransfer.files[0];
+                console.log('File type:', file.type);
+                console.log('File name:', file.name);
+                
+                // Validate it's a PDF
+                if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+                    alert('⚠️ Please upload a PDF file only!');
+                    console.error('Invalid file type:', file.type);
+                    return false;
+                }
+                
+                try {
+                    // Set the file to the input
+                    const dataTransfer = new DataTransfer();
+                    dataTransfer.items.add(file);
+                    pdfInput.files = dataTransfer.files;
+                    
+                    displayFileName(file);
+                    console.log('✅ PDF file accepted:', file.name);
+                } catch (error) {
+                    console.error('Error setting file:', error);
+                    alert('Error processing file. Please try using the "Choose PDF File" button instead.');
+                }
+            } else {
+                console.error('No files in drop event');
             }
+            
+            return false;
         });
 
         // File input change
@@ -117,7 +195,16 @@ document.addEventListener('DOMContentLoaded', function() {
             // Create FormData for file upload
             const formData = new FormData();
             formData.append('pdf', pdfInput.files[0]);
-            formData.append('cover', document.getElementById('bookCover').files[0]);
+            
+            // Only append cover if a file is selected
+            const coverInput = document.getElementById('bookCover');
+            if (coverInput.files && coverInput.files[0]) {
+                formData.append('cover', coverInput.files[0]);
+                console.log('📷 Cover image selected:', coverInput.files[0].name);
+            } else {
+                console.log('⚠️ No cover image selected');
+            }
+            
             formData.append('title', document.getElementById('bookTitle').value);
             formData.append('author', document.getElementById('author').value);
             formData.append('description', document.getElementById('description').value);
@@ -125,6 +212,10 @@ document.addEventListener('DOMContentLoaded', function() {
             formData.append('tags', document.getElementById('tags').value);
 
             console.log('Uploading book:', document.getElementById('bookTitle').value);
+
+            // Make sure API_BASE is defined
+            const apiUrl = typeof API_BASE !== 'undefined' ? API_BASE : 'http://localhost:3000';
+            console.log('API URL:', apiUrl);
 
             try {
                 // Show loading state
@@ -135,10 +226,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     submitBtn.disabled = true;
                 }
 
-                console.log('Sending request to:', `${API_URL}/api/books`);
+                console.log('Sending request to:', `${apiUrl}/api/books`);
 
                 // Upload to backend
-                const response = await fetch(`${API_URL}/api/books`, {
+                const response = await fetch(`${apiUrl}/api/books`, {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${token}`
@@ -155,9 +246,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     uploadForm.reset();
                     if (pdfFileName) pdfFileName.style.display = 'none';
                     
-                    // Redirect to main page after 1 second
+                    // Redirect to home page after 1 second
                     setTimeout(() => {
-                        window.location.href = '../main.html';
+                        window.location.href = '../home.html';
                     }, 1000);
                 } else {
                     alert(`❌ Upload failed: ${result.message || 'Unknown error'}`);
@@ -169,7 +260,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             } catch (error) {
                 console.error('❌ Upload error:', error);
-                alert('Upload failed. Please try again. Check console for details.');
+                
+                let errorMessage = 'Upload failed. ';
+                if (error.message === 'Failed to fetch') {
+                    errorMessage += 'Cannot connect to server. Make sure backend is running on http://localhost:3000';
+                } else {
+                    errorMessage += error.message || 'Unknown error';
+                }
+                
+                alert(errorMessage + '\n\nCheck console (F12) for details.');
+                console.error('Full error:', error);
+                console.error('Error details:', {
+                    message: error.message,
+                    stack: error.stack,
+                    apiUrl: typeof API_BASE !== 'undefined' ? API_BASE : 'undefined'
+                });
+                
                 const submitBtn = uploadForm.querySelector('button[type="submit"]');
                 if (submitBtn) {
                     submitBtn.textContent = '📤 Upload Book';

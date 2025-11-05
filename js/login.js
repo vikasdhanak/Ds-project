@@ -103,9 +103,14 @@ document.addEventListener('DOMContentLoaded', function() {
     loginForm.addEventListener('submit', async function(e) {
         e.preventDefault();
         
+        console.log('🔐 Login form submitted!');
+        
         const email = document.getElementById('loginEmail').value;
         const password = document.getElementById('loginPassword').value;
         const rememberMe = document.getElementById('rememberMe') ? document.getElementById('rememberMe').checked : false;
+        
+        console.log('📧 Email:', email);
+        console.log('🔒 Password length:', password.length);
         
         const formData = {
             email: email,
@@ -113,7 +118,8 @@ document.addEventListener('DOMContentLoaded', function() {
             rememberMe: rememberMe
         };
         
-        console.log('Attempting login with:', { email, password: '***' });
+        console.log('📤 Sending login request to:', `${API_URL}/api/auth/login`);
+        console.log('📦 Form data:', { email, password: '***', rememberMe });
         
         try {
             const response = await fetch(`${API_URL}/api/auth/login`, {
@@ -124,17 +130,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 body: JSON.stringify(formData)
             });
 
+            console.log('✅ Response received!');
             console.log('Response status:', response.status);
+            console.log('Response headers:', response.headers);
             
             if (!response.ok) {
                 const errorText = await response.text();
+                console.error('❌ Login failed!');
+                console.error('Status:', response.status);
                 console.error('Error response:', errorText);
-                alert(`Login failed: ${errorText}`);
+                alert(`❌ Login failed: ${errorText || 'Please check your email and password'}`);
                 return;
             }
             
             const result = await response.json();
-            console.log('Response data:', result);
+            console.log('✅ Response data:', result);
 
             if (result && result.success && result.token) {
                 // Save token to localStorage
@@ -142,17 +152,34 @@ document.addEventListener('DOMContentLoaded', function() {
                 localStorage.setItem('user', JSON.stringify(result.user));
                 
                 console.log('Login successful, redirecting...');
+                console.log('Current path:', window.location.pathname);
                 alert('Login successful!');
                 
-                // Redirect to main page (adjust path based on where login.html is)
-                window.location.href = '../main.html';
+                // Redirect to home page (adjust path based on where login.html is)
+                // Check if we're on index.html (root) or pages/login.html
+                const currentPath = window.location.pathname;
+                const isIndexPage = currentPath.includes('index.html') || currentPath === '/' || currentPath.endsWith('/');
+                const isPagesFolder = currentPath.includes('/pages/');
+                
+                console.log('Is index page?', isIndexPage);
+                console.log('Is pages folder?', isPagesFolder);
+                
+                if (isPagesFolder) {
+                    window.location.href = '../home.html';
+                } else {
+                    window.location.href = 'home.html';
+                }
             } else {
-                console.error('Login failed:', result);
-                alert(`Login failed: ${result?.message || 'Invalid response from server'}`);
+                console.error('❌ Login failed - Invalid response:', result);
+                alert(`❌ Login failed: ${result?.message || 'Invalid response from server'}`);
             }
         } catch (error) {
-            console.error('Login error:', error);
-            alert('Login failed. Please try again. Check console for details.');
+            console.error('❌❌❌ LOGIN ERROR CAUGHT:');
+            console.error('Error object:', error);
+            console.error('Error name:', error.name);
+            console.error('Error message:', error.message);
+            console.error('Error stack:', error.stack);
+            alert(`❌ Login failed!\n\nError: ${error.message}\n\nCheck browser console (F12) for details.`);
         }
     });
 });

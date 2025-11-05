@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - E-Book Platform</title>
+    <link rel="stylesheet" href="../css/admin.css">
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <h2>📚 Admin Panel</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#dashboard" class="nav-item active" onclick="showSection('dashboard')">
+                    <span class="icon">📊</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#users" class="nav-item" onclick="showSection('users')">
+                    <span class="icon">👥</span>
+                    <span>Users</span>
+                </a>
+                <a href="#books" class="nav-item" onclick="showSection('books')">
+                    <span class="icon">📖</span>
+                    <span>All Books</span>
+                </a>
+                <a href="../home.html" class="nav-item">
+                    <span class="icon">🏠</span>
+                    <span>Back to Site</span>
+                </a>
+                <a href="#" class="nav-item" onclick="logout()">
+                    <span class="icon">🚪</span>
+                    <span>Logout</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-header">
+                <h1 id="page-title">Dashboard</h1>
+                <div class="admin-info">
+                    <span id="admin-name">Admin</span>
+                </div>
+            </header>
+
+            <!-- Dashboard Section -->
+            <section id="dashboard-section" class="content-section active">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">👥</div>
+                        <div class="stat-info">
+                            <h3 id="total-users">0</h3>
+                            <p>Total Users</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">📚</div>
+                        <div class="stat-info">
+                            <h3 id="total-books">0</h3>
+                            <p>Total Books</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">❤️</div>
+                        <div class="stat-info">
+                            <h3 id="total-library">0</h3>
+                            <p>Library Items</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Top Users Ranking Section -->
+                <div class="top-users-section">
+                    <h2 class="section-title">🏆 Top Contributors</h2>
+                    <p class="section-subtitle">Most Active Book Uploaders</p>
+                    <div class="top-users-grid" id="top-users-grid">
+                        <p class="loading">Loading rankings...</p>
+                    </div>
+                </div>
+
+                <div class="chart-section">
+                    <h2>Quick Overview</h2>
+                    <div class="overview-cards">
+                        <div class="overview-card">
+                            <h3>Recent Activity</h3>
+                            <p>System is running smoothly</p>
+                        </div>
+                        <div class="overview-card">
+                            <h3>System Status</h3>
+                            <p class="status-online">● Online</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Users Section -->
+            <section id="users-section" class="content-section">
+                <div class="section-header">
+                    <h2>All Users</h2>
+                    <input type="text" id="userSearch" placeholder="Search users..." class="search-input">
+                </div>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Screen Name</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Books Uploaded</th>
+                                <th>Library Items</th>
+                                <th>Joined Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-table-body">
+                            <tr>
+                                <td colspan="6" class="loading">Loading users...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Books Section -->
+            <section id="books-section" class="content-section">
+                <div class="section-header">
+                    <h2>All Books</h2>
+                    <input type="text" id="bookSearch" placeholder="Search books..." class="search-input">
+                </div>
+                <div class="books-grid" id="admin-books-grid">
+                    <p class="loading">Loading books...</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="../js/config.js"></script>
+    <script src="../js/admin.js"></script>
+</body>
+</html>

@@ -14,7 +14,7 @@
 <!-- Upload Book Modal Popup -->
 <div id="uploadModal" class="upload-modal" style="display: flex;">
     <div class="upload-modal-content">
-        <span class="upload-close-btn" onclick="window.location.href='../main.html'">&times;</span>
+        <span class="upload-close-btn" onclick="window.location.href='../home.html'">&times;</span>
         
         <div class="upload-header">
             <h2>Upload a Book</h2>
@@ -27,7 +27,11 @@
                 <label for="bookPDF">Book PDF <span class="required">*</span></label>
                 <div class="pdf-upload-area" id="pdfUploadArea">
                     <i class='bx bx-cloud-upload'></i>
-                    <p>Drag & drop PDF here or click to browse</p>
+                    <p>Drag & drop PDF here</p>
+                    <p style="margin: 5px 0;">or</p>
+                    <button type="button" class="choose-file-btn" onclick="document.getElementById('bookPDF').click()">
+                        <i class='bx bx-folder-open'></i> Choose PDF File
+                    </button>
                     <input type="file" id="bookPDF" name="bookPDF" accept=".pdf" style="display: none;">
                 </div>
                 <span id="pdfFileName" class="file-name"></span>

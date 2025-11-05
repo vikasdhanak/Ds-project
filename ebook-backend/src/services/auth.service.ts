@@ -56,21 +56,31 @@ export class AuthService {
 
   async login(email: string, password: string) {
     // Find user
+    console.log('Looking for user with email:', email);
     const user = await prisma.user.findUnique({
       where: { email },
     });
 
     if (!user) {
+      console.log('User not found');
       throw new Error('Invalid email or password');
     }
 
+    console.log('User found, verifying password...');
+    console.log('Stored hash:', user.password);
+    console.log('Input password:', password);
+    
     // Verify password
     const isValidPassword = await bcrypt.compare(password, user.password);
+    console.log('Password valid:', isValidPassword);
 
     if (!isValidPassword) {
+      console.log('Password verification failed');
       throw new Error('Invalid email or password');
     }
 
+    console.log('Password verified, generating token...');
+    
     // Generate token
     const token = jwt.sign(
       { id: user.id, email: user.email },

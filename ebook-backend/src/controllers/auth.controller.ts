@@ -30,16 +30,24 @@ export class AuthController {
     try {
       const { email, password, rememberMe } = req.body;
       
+      console.log('Login attempt for email:', email);
+      
       const result = await authService.login(email, password);
 
+      console.log('Login successful for:', email);
+      
       res.status(200).json({
         success: true,
         message: 'Login successful',
         token: result.token,
         user: result.user,
       });
-    } catch (error) {
-      next(error);
+    } catch (error: any) {
+      console.error('Login error:', error.message);
+      res.status(401).json({
+        success: false,
+        message: error.message || 'Invalid email or password'
+      });
     }
   }
 
